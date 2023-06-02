@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        
+      - name: mysql
+        image: mysql:5.7
+        args:
+        - "--ignore-db-dir=lost+found"
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+          - name: mysql-persistent-storage
+            mountPath: /var/lib/mysql
+          - name: usermgmt-script
+            mountPath: /docker-entrypoint-initdb.d #https://hub.docker.com/_/mysql Refer Initializing a fresh instance
+        env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysecret
+                  key: db-password 
+
+      volumes: 
+          - name: mysql-persistent-storage
+            persistentVolumeClaim: 
+              claimName: mysql-claim
+          - name: usermgmt-script
+            configMap:
+              name: mysql-configmap
+       
+
