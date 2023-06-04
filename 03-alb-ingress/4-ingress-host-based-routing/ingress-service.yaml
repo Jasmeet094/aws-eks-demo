@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myingress-host-based
+  labels:
+    name: myingress
+  annotations:
+     # Name of the load balancer
+     alb.ingress.kubernetes.io/load-balancer-name: test-alb-ingress-host
+     # type of load balancer
+     alb.ingress.kubernetes.io/scheme: internet-facing
+     # Healthchecks
+     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '10'
+     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+     alb.ingress.kubernetes.io/success-codes: '200'
+     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+     # SSL Settings
+     alb.ingress.kubernetes.io/listen-ports:  '[{"HTTPS":443}, {"HTTP":80}]'
+     #alb.ingress.kubernetes.io/certificate-arn:  Ingress will automatically discover certificate related to hosted zone 
+     alb.ingress.kubernetes.io/ssl-redirect: '443'
+     # External Dns Settings
+     external-dns.alpha.kubernetes.io/hostname: host-based.jasmeetdevops.com
+       
+spec:
+  #ingressClassName: aws-ingress-class   # we don't need to specify here ingress class if we are using the annotation for default class alb
+  defaultBackend:
+    service:
+      name: root-app-svc
+      port:
+        number: 80   
+  rules:
+  - host: app1-host.jasmeetdevops.com 
+    http:
+       paths:
+       - pathType: Prefix
+         path: "/app1"
+         backend:
+          service:
+            name: app1-svc
+            port: 
+              number: 80
+
+  - host: app2-host.jasmeetdevops.com
+    http:
+       paths:
+       - pathType: Prefix
+         path: "/app2"
+         backend:
+          service:
+            name: app2-svc
+            port: 
+              number: 80
+    
+ # In this ingress resouurce i have remove the annotation related to aws certificate becuase ingress will automatically discover
+ # the right certifcate which is attahced to our hosted zone and attach that certificate to the host names of our servies.
+
+ # Always use '/*' rule in the end because if we use this rule at first numb then other rules
+ # will not work as this is the root path , traffic will not route to other rules                              

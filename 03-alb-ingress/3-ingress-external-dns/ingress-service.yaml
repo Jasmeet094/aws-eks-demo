@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myingress-external-dns
+  labels:
+    name: myingress
+  annotations:
+     # Name of the load balancer
+     alb.ingress.kubernetes.io/load-balancer-name: test-alb-ingress-external
+     # type of load balancer
+     alb.ingress.kubernetes.io/scheme: internet-facing
+     # Healthchecks
+     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+     alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '10'
+     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+     alb.ingress.kubernetes.io/success-codes: '200'
+     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+     # SSL Settings
+     alb.ingress.kubernetes.io/listen-ports:  '[{"HTTPS":443}, {"HTTP":80}]'
+     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:307436399520:certificate/bc84a02e-419c-44c7-a716-d6fc0116302c
+     alb.ingress.kubernetes.io/ssl-redirect: '443'
+     # External Dns Settings
+     external-dns.alpha.kubernetes.io/hostname: external-dns.jasmeetdevops.com
+       
+spec:
+  #ingressClassName: aws-ingress-class   # we don't need to specify here ingress class if we are using the annotation for default class alb
+  defaultBackend:
+    service:
+      name: root-app-svc
+      port:
+        number: 80   
+  rules:
+  -  http:
+       paths:
+       - pathType: Prefix
+         path: "/app1"
+         backend:
+          service:
+            name: app1-svc
+            port: 
+              number: 80
+
+  -  http:
+       paths:
+       - pathType: Prefix
+         path: "/app2"
+         backend:
+          service:
+            name: app2-svc
+            port: 
+              number: 80
+    
+
+ # Always use '/*' rule in the end because if we use this rule at first numb then other rules
+ # will not work as this is the root path , traffic will not route to other rules                              
