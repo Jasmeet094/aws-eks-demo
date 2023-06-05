@@ -24,7 +24,16 @@ aws iam create-policy \
     --policy-document file://iam_policy.json
 ```
 
-3. #### Create an IAM role. Create a Kubernetes service account named aws-load-balancer-controller in the kube-system namespace for the AWS Load Balancer Controller and annotate the Kubernetes service account with the name of the IAM role
+3. #### Create a IAM OIDC provider
+ ```
+ eksctl utils associate-iam-oidc-provider \
+    --region region-code \
+    --cluster <cluter-name> \
+    --approve
+ ```
+
+
+4. #### Create an IAM role. Create a Kubernetes service account named aws-load-balancer-controller in the kube-system namespace for the AWS Load Balancer Controller and annotate the Kubernetes service account with the name of the IAM role
 
 ```
 
@@ -38,7 +47,7 @@ eksctl create iamserviceaccount \
 
 ```
 
-4. #### Install AWS Load Balancer Controller using HELM
+5. #### Install AWS Load Balancer Controller using HELM
 
 `helm repo add eks https://aws.github.io/eks-charts`
 
@@ -62,7 +71,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 
 ### Steps to install External DNS
 
-1. #### Create a IAM Policy so that Servvice account of external dns get access to Route53
+1. #### Create a IAM Policy so that Service account of external dns get access to Route53
   
 ```
 {

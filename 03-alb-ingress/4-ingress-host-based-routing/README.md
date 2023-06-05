@@ -4,9 +4,9 @@
 
 #### I will be using/creating DNS Record set for this Demo 
 ```
-host-based.jasmeetdevops.com
-app1-host.jasmeetdevops.com
-app2-host.jasmeetdevops.com
+host.jasmeetdevops.com
+application-1.jasmeetdevops.com
+application-2.jasmeetdevops.com
 ```
 
 ### Create a EKS Cluster 
@@ -55,17 +55,17 @@ eksctl create iamserviceaccount \
 
 `helm repo add eks https://aws.github.io/eks-charts`
 
-`helm repo updatehelm repo update`
+`helm repo update`
 
 ```
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n kube-system \
-  --set clusterName=test-demo-3 \
+  --set clusterName=test-demo-4 \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \ 
   --set region=us-west-2 \
-  --set vpcId=vpc-0ee6a775330b191ab \
-  --set image.repository=602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller  
+  --set vpcId=vpc-03e0386e74528e0a8 \
+  --set image.repository=602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller 
 
 ```
 
@@ -75,7 +75,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 
 ### Steps to install External DNS
 
-1. #### Create a IAM Policy so that Servvice account of external dns get access to Route53
+1. #### Create a IAM Policy so that Service account of external dns get access to Route53
   
 ```
 {
@@ -110,8 +110,8 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 eksctl create iamserviceaccount \
     --name external-dns \
     --namespace default \
-    --cluster eksdemo1 \
-    --attach-policy-arn arn:aws:iam::180789647333:policy/AllowExternalDNSUpdates \
+    --cluster test-demo-4 \
+    --attach-policy-arn arn:aws:iam::307436399520:policy/AllowExternalDns_eks \
     --approve \
     --override-existing-serviceaccounts
 ```
@@ -134,16 +134,16 @@ eksctl create iamserviceaccount \
 2. Then Create External-dns resource with service account and IAM policy.
 3. You can declare different hostname/dns name for any service under spec as shown in ingress-service yaml file.
 4. Then create all APPS deployments and services and use the names of services in ingress service yaml file under spec.
-5. Create Ingress Service resource
+5. Create ACM certificate for hosted zone and then Create Ingress Service resource 
 6. You should see a dns record named `host-based.jasmeetdevops.com`, `app1-host.jasmeetdevops.com` and `app2-host.jasmeetdevops.com` got created in Route 53
 7. This will redirect traffic from HTTP to HTTPS and will use aws certificate automatically as we didn't  defined the annotaion related to aws certificate arn.
 
 8. Now you can accsess the application using DNS record by adding prefix to the DNS name :
 ```
 # HTTPS URLs
-https://host-based.jasmeetdevops.com/
-https://app1-host.jasmeetdevops.com/
-https://app2-host.jasmeetdevops.com/
+https://host.jasmeetdevops.com/
+https://application-1.jasmeetdevops.com/
+https://application-2.jasmeetdevops.com/
 
 
 ```

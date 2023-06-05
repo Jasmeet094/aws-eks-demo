@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: myapp2
-          image: jasmeetsingh94/ingress-test:ingress-test-image-2
+          image: jasmeetsingh94/ingress-app2:1.0
           ports:
             - containerPort: 80
 

@@ -13,10 +13,10 @@ spec:
     spec:
       containers:
         - name: myapp-root
-          image: jasmeetsingh94/alb-ingress
+          image: jasmeetsingh94/ingress-app:1.0
           ports:
             - containerPort: 80
-
+   
 ---
 
 apiVersion: v1

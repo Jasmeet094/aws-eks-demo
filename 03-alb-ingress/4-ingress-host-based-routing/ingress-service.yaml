@@ -22,7 +22,7 @@ metadata:
      #alb.ingress.kubernetes.io/certificate-arn:  Ingress will automatically discover certificate related to hosted zone 
      alb.ingress.kubernetes.io/ssl-redirect: '443'
      # External Dns Settings
-     external-dns.alpha.kubernetes.io/hostname: host-based.jasmeetdevops.com
+     external-dns.alpha.kubernetes.io/hostname: host.jasmeetdevops.com
        
 spec:
   #ingressClassName: aws-ingress-class   # we don't need to specify here ingress class if we are using the annotation for default class alb
@@ -32,22 +32,22 @@ spec:
       port:
         number: 80   
   rules:
-  - host: app1-host.jasmeetdevops.com 
+  - host: application-1.jasmeetdevops.com 
     http:
        paths:
        - pathType: Prefix
-         path: "/app1"
+         path: /
          backend:
           service:
             name: app1-svc
             port: 
               number: 80
 
-  - host: app2-host.jasmeetdevops.com
+  - host: application-2.jasmeetdevops.com
     http:
        paths:
        - pathType: Prefix
-         path: "/app2"
+         path: /
          backend:
           service:
             name: app2-svc
