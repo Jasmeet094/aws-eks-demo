@@ -1,19 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myapp-root
+  name: myapp1
+  namespace: app1
 spec:
   selector:
     matchLabels:
-      app: myapp-root
+      app: myapp1
   template:
     metadata:
       labels:
-        app: myapp-root
+        app: myapp1
     spec:
       containers:
-        - name: myapp-root
-          image: jasmeetsingh94/alb-ingress
+        - name: myapp1
+          image: jasmeetsingh94/alb-ingress:1.0
           ports:
             - containerPort: 80
 
@@ -22,16 +23,19 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: root-app-svc
+  name: app1-svc
   labels:
-    app: app3-root-nginx
+    app: app1-nginx
+  namespace: app1
   annotations: 
-    alb.ingress.kubernetes.io/healthcheck-path: /index.html
-
+      alb.ingress.kubernetes.io/healthcheck-path: /app1/index.html
 spec:
   type: NodePort
   selector:
-    app: myapp-root
+    app: myapp1
   ports:
     - port: 80
       targetPort: 80  
+
+
+

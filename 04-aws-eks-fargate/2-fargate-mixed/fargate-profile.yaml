@@ -1,0 +1,23 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: test-demo-4
+  region: us-west-2
+
+fargateProfiles:
+   
+  - name: app2-default
+    selectors:
+      # All workloads in the "app1" Kubernetes namespace will be
+      # scheduled onto Fargate:
+      - namespace: app2
+
+  - name: ums-default
+    selectors:
+      # All workloads in the "app1" Kubernetes namespace will be
+      # scheduled onto Fargate:
+      - namespace: ums   
+  
+      
+  

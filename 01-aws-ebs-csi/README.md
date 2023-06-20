@@ -5,25 +5,29 @@ EBS CSI (Elastic Block Store Container Storage Interface) driver is a Kubernetes
 
 ## Create a EKS Cluster 
 
- eksctl create cluster --name test-demo-eks --region us-west-2 --nodegroup-name test-ng --node-type t3.micro --nodes 2 --node-private-networking --managed
+ `eksctl create cluster --name test-demo-eks --region us-west-2 --nodegroup-name test-ng --node-type t3.micro --nodes 2 --node-private-networking --managed`
 
 
 
 =================================================================================================================================
-## Steps to install EBS CSI Driver
+### Steps to Install EBS CSI Driver
 
-1. Attach a IAM Policy to worker node IAM role - EbsCsiDriver policy
+#### 1. Attach a IAM Policy to worker node IAM role - EbsCsiDriver policy
     
-    ARN of Policy =  arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
+    `ARN of Policy =  arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy`
 
-2. Install EBS CSI driver using Helm : (If helm is not installed , install it first:- curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash )
+#### 2. Install EBS CSI driver using Helm : (If helm is not installed , install it first:- curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash )
 
 Helm
+
 ~ 1. Add the aws-ebs-csi-driver Helm repository.
 
      helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
 
-~ 2. helm repo update
+~ 2. Update Helm repository
+
+     helm repo update
+
 ~ 3. Install the latest release of the driver.
 
      helm upgrade --install aws-ebs-csi-driver --namespace kube-system aws-ebs-csi-driver/aws-ebs-csi-driver
@@ -48,7 +52,7 @@ Helm
  mysql> select * from users;
 
 ==================================================================================================================================
-## CHECK application ==  http://a5b527f216d014956882f1b41a2bf166-1556899445.us-west-2.elb.amazonaws.com/usermgmt/health-status
+## CHECK application URL =  http://a5b527f216d014956882f1b41a2bf166-1556899445.us-west-2.elb.amazonaws.com/usermgmt/health-status
 =================================================================================================================================
 
 

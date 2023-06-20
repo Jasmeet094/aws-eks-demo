@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: usermgmt-restapp-nodeport-service
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /usermgmt/health-status
+spec:
+  selector:
+    app: app1
+  type: NodePort
+  ports:
+  - port: 8095
+    targetPort: 8095
+    

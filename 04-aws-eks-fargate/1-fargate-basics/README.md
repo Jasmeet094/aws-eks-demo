@@ -1,18 +1,21 @@
-##  AWS Load  Balancer Controller - Ingress - Host Based Routing
+##  AWS EKS - FARGATE 
 
-### This Demo explains about the working of host based routing in ingress. Meaning we can register records in route 53 direclty for any service. The annotation we using in ingress resource will create record for default backend servvice and for other services we have to declare DNS name under spec in host section.
+### AWS EKS (Elastic Kubernetes Service) Fargate is a compute engine for Amazon Elastic Kubernetes Service (EKS) that allows you to run containers without having to provision and manage the underlying infrastructure. It provides a serverless experience for running containers on Kubernetes. In this demo we are creating a simple demo  application which will be deploy on Fargate. In Fargate  1 Pod = 1 Node , so suppose in our deployment we have declared replicas = 3 then there will be 3 nodes get deployed. We need to  keep in mind while using Fargate profiles in EKS that we have to deploy/create resources in the namespace which is declared in Fargate profile yaml file.
 
 #### I will be using/creating DNS Record set for this Demo 
 ```
-host.jasmeetdevops.com
-application-1.jasmeetdevops.com
-application-2.jasmeetdevops.com
+fargate.jasmeetdevops.com
+
 ```
 
 ### Create a EKS Cluster 
  ```
- eksctl create cluster --name test-demo-eks --region us-west-2 --nodegroup-name test-ng --node-type t3.micro --nodes 2 --node-private-networking --managed
+ eksctl create cluster --name test-demo-5 --region us-west-2 --nodegroup-name test-ng --node-type t3.micro --nodes 2 --node-private-networking --managed
 ```
+### Create a Fargate Profile using `fargate-profile.yaml`
+
+`kubectl apply -f fargate-profile.yaml`
+
 
 ### Steps to  Install Aws Load Balancer Controller
 
@@ -32,8 +35,8 @@ aws iam create-policy \
 3. #### Create a IAM OIDC provider
  ```
  eksctl utils associate-iam-oidc-provider \
-    --region us-west-2 \
-    --cluster dev-ops-test1 \
+    --region region-code \
+    --cluster test-demo-5 \
     --approve
  ```
 
@@ -42,11 +45,11 @@ aws iam create-policy \
 ```
 
 eksctl create iamserviceaccount \
-  --cluster=dev-ops-test1 \
+  --cluster=test-demo-5 \
   --namespace=kube-system \
   --name=aws-load-balancer-controller \
   --role-name AmazonEKSLoadBalancerControllerRole \
-  --attach-policy-arn=arn:aws:iam::307436399520:policy/AWSLoadBalancerControllerIAMPolicy \
+  --attach-policy-arn=arn:aws:iam::111122223333:policy/AWSLoadBalancerControllerIAMPolicy \
   --approve
 
 ```
@@ -60,18 +63,21 @@ eksctl create iamserviceaccount \
 ```
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n kube-system \
-  --set clusterName=dev-ops-test1 \
+  --set clusterName=test-demo-5 \
   --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller \
+  --set serviceAccount.name=aws-load-balancer-controller \ 
   --set region=us-west-2 \
-  --set vpcId=vpc-01a4d7c22762bcc8a \
+  --set vpcId=vpc-03e0386e74528e0a8 \
   --set image.repository=602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller 
 
 ```
 
-  [Region codes](https://docs.aws.amazon.com/eks/latest/userguide/add-ons-images.html)
+[Region codes](https://docs.aws.amazon.com/eks/latest/userguide/add-ons-images.html)
 
 [Annotations for Ingress](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.5/guide/ingress/annotations/)
+
+[Fargate Information](https://eksctl.io/usage/fargate-support/)
+
 
 ### Steps to install External DNS
 
@@ -110,7 +116,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 eksctl create iamserviceaccount \
     --name external-dns \
     --namespace default \
-    --cluster dev-ops-test1 \
+    --cluster test-demo-5 \
     --attach-policy-arn arn:aws:iam::307436399520:policy/AllowExternalDns_eks \
     --approve \
     --override-existing-serviceaccounts
@@ -129,28 +135,25 @@ eksctl create iamserviceaccount \
 
 
 ## Now Deploy yaml files to see working of External Dns
-
+#### Note:- To use fargate profile remember to use this annotation in ingress service
+ `alb.ingress.kubernetes.io/target-type: ip`
 1. First we need to create Ingress Class to specify the default controller which is ALB in this case by creating ingress Class
-2. Then Create External-dns resource with service account and IAM policy.
+2. Create namespace app1.
+2. Then Create External-dns resource with service account and IAM policy in namespace app1.
 3. You can declare different hostname/dns name for any service under spec as shown in ingress-service yaml file.
 4. Then create all APPS deployments and services and use the names of services in ingress service yaml file under spec.
 5. Create ACM certificate for hosted zone and then Create Ingress Service resource 
-6. You should see a dns record named `host-based.jasmeetdevops.com`, `app1-host.jasmeetdevops.com` and `app2-host.jasmeetdevops.com` got created in Route 53
+6. You should see a dns record named `fargate.jasmeetdevops.com` got created in Route 53
 7. This will redirect traffic from HTTP to HTTPS and will use aws certificate automatically as we didn't  defined the annotaion related to aws certificate arn.
 
 8. Now you can accsess the application using DNS record by adding prefix to the DNS name :
 ```
 # HTTPS URLs
-https://host.jasmeetdevops.com/
-https://application-1.jasmeetdevops.com/
-https://application-2.jasmeetdevops.com/
-
+https://fargate.jasmeetdevops.com/
 
 ```
 
 9. After testing make sure to delete all  resources to save charges
 
-####  In this demo we have removed the below annotation in our ingress resource related to aws certificate because ingress will automatically attach the certificate to  DNS Records of hosts defined in spec section. but we need to create a aws certificate for our DNS record.
 
-`alb.ingress.kubernetes.io/certificate-arn:`
 
